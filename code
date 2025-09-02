@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+    <style>
+        .beige-modal-content {
+            background-color: #f5f5dc !important;
+            color: #5C3317 !important;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+            min-width: 400px;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .auth-bar {
+            position: absolute;
+            top: 24px;
+            right: 48px;
+            display: flex;
+            gap: 12px;
+        }
+        .beige-block {
+            background-color: #f5f5dc !important;
+            color: #5C3317 !important;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        body {
+            font-family: 'Bubblegum Sans', cursive;
+            background: url('img.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            font-size: 7em;
+            font-weight: bold;
+            margin-bottom: 0.2em;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: rgba(92, 51, 23, 0.85); /* Dark brown, semi-transparent */
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            color: #fff;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: rgba(92, 51, 23, 0.95);
+            padding: 40px 32px;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            min-width: 400px;
+            min-height: 350px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .close-btn {
+            align-self: flex-end;
+            background: #A0522D;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input, textarea, button {
+            padding: 10px;
+            border: 1px solid #fff;
+            border-radius: 10px;
+            font-family: inherit;
+            background-color: #8B4513;
+            color: #fff;
+        }
+        button {
+            background-color: #A0522D; /* Brown button */
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #D2691E; /* Lighter brown hover */
+        }
+        .hackathon {
+            background-color: rgba(139, 69, 19, 0.85); /* Semi-transparent brown to match bg */
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: #fff;
+        }
+        .hackathon h3 {
+            margin: 0 0 10px;
+            color: #fff;
+        }
+        .teammates, .tasks {
+            margin-top: 10px;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .edit-btn, .delete-btn {
+            background-color: #68d391; /* Pastel green */
+            margin-right: 5px;
+        }
+        .delete-btn {
+            background-color: #fc8181; /* Pastel red */
+        }
+        .save-btn {
+            background-color: #48bb78; /* Darker pastel green */
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-bar" id="auth-bar">
+        <button id="show-signup-modal-btn" style="background: #A0522D; color: #fff; border-radius: 12px; padding: 10px 24px; font-size: 1.1em; cursor: pointer; border: none;">Sign Up</button>
+        <button id="show-login-modal-btn" style="background: #A0522D; color: #fff; border-radius: 12px; padding: 10px 24px; font-size: 1.1em; cursor: pointer; border: none;">Log In</button>
+    </div>
+    <div id="dashboard" style="position:fixed;top:24px;left:24px;min-width:220px;max-width:300px;background:#f5f5dc;color:#5C3317;padding:18px 16px;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:none;z-index:1100;">
+        <h3 style="margin-top:0;">Dashboard</h3>
+        <div id="dashboard-username"></div>
+        <div id="dashboard-deadlines"></div>
+    </div>
+    <h1>Hackathon Tracker</h1>
+    <div style="display: flex; width: 100%; max-width: 900px; justify-content: center; margin-bottom: 24px;">
+        <button id="show-modal-btn" style="background: #A0522D; color: #fff; border-radius: 12px; padding: 18px 48px; font-size: 2em; cursor: pointer; border: none;">Add Hackathon</button>
+    </div>
+    <div id="hackathons-list" style="width: 100%; max-width: 900px;"></div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-modal-btn">X</button>
+            <form id="add-hackathon-form">
+                <input type="text" id="name" placeholder="Hackathon Name" required>
+                <input type="date" id="deadline" required>
+                <textarea id="description" placeholder="Description" style="min-height: 80px;"></textarea>
+                <button type="submit">Add Hackathon</button>
+            </form>
+        </div>
+    </div>
+    <div id="signup-modal" class="modal">
+        <div class="modal-content beige-modal-content">
+            <button class="close-btn" id="close-signup-modal-btn">X</button>
+            <form id="signup-form">
+                <h2>Sign Up</h2>
+                <input type="text" id="signup-username" placeholder="Username" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <input type="number" id="signup-age" placeholder="Age" required min="1" max="120">
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+    <div id="login-modal" class="modal">
+        <div class="modal-content beige-modal-content">
+            <button class="close-btn" id="close-login-modal-btn">X</button>
+            <form id="login-form">
+                <h2>Log In</h2>
+                <input type="text" id="login-username" placeholder="Email/Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+    </div>
+    <div id="details-modal" class="modal">
+        <div class="modal-content beige-modal-content" id="details-content">
+            <button class="close-btn" id="close-details-modal-btn">X</button>
+            <!-- Details will be injected here -->
+        </div>
+    </div>
+
+    <script>
+    let hackathons = [];
+    const listContainer = document.getElementById('hackathons-list');
+    const modal = document.getElementById('modal');
+    const showModalBtn = document.getElementById('show-modal-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    let form = document.getElementById('add-hackathon-form');
+    const signupModal = document.getElementById('signup-modal');
+    const loginModal = document.getElementById('login-modal');
+    const showSignupModalBtn = document.getElementById('show-signup-modal-btn');
+    const showLoginModalBtn = document.getElementById('show-login-modal-btn');
+    const closeSignupModalBtn = document.getElementById('close-signup-modal-btn');
+    const closeLoginModalBtn = document.getElementById('close-login-modal-btn');
+    const signupForm = document.getElementById('signup-form');
+    const loginForm = document.getElementById('login-form');
+    let currentUser = JSON.parse(localStorage.getItem('user')) || null;
+    const detailsModal = document.getElementById('details-modal');
+    const closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
+    const detailsContent = document.getElementById('details-content');
+        // Auth modal logic
+        showSignupModalBtn.addEventListener('click', () => {
+            loginModal.classList.remove('active');
+            signupModal.classList.add('active');
+        });
+        showLoginModalBtn.addEventListener('click', () => {
+            signupModal.classList.remove('active');
+            loginModal.classList.add('active');
+        });
+        closeSignupModalBtn.addEventListener('click', () => {
+            signupModal.classList.remove('active');
+        });
+        closeLoginModalBtn.addEventListener('click', () => {
+            loginModal.classList.remove('active');
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === signupModal) {
+                signupModal.classList.remove('active');
+            }
+            if (e.target === loginModal) {
+                loginModal.classList.remove('active');
+            }
+        });
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const password = document.getElementById('signup-password').value;
+            const age = document.getElementById('signup-age').value;
+            let allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+            if (allUsers.some(u => u.username === username)) {
+                alert('Account already exists with this username.');
+                return;
+            }
+            let newUser = { username, password, age };
+            allUsers.push(newUser);
+            localStorage.setItem('allUsers', JSON.stringify(allUsers));
+            localStorage.setItem('user', JSON.stringify(newUser));
+            currentUser = newUser;
+            alert('Signed up as ' + username);
+            signupModal.classList.remove('active');
+            renderHackathons();
+        });
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usernameOrEmail = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            let allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+            const foundUser = allUsers.find(u => (u.username === usernameOrEmail || u.email === usernameOrEmail) && u.password === password);
+            if (foundUser) {
+                localStorage.setItem('user', JSON.stringify(foundUser));
+                currentUser = foundUser;
+                alert('Logged in as ' + foundUser.username);
+                loginModal.classList.remove('active');
+                renderHackathons();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        showModalBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                alert('Please log in or sign up first!');
+                return;
+            }
+            modal.classList.add('active');
+        });
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        function saveToLocal() {
+            localStorage.setItem('hackathons', JSON.stringify(hackathons));
+        }
+
+        function renderHackathons() {
+            listContainer.innerHTML = '';
+            if (!currentUser) {
+                listContainer.innerHTML = '<p style="color:#fff;text-align:center;font-size:1.5em;">Log in to view your dashboard.</p>';
+                return;
+            }
+            let allHacks = JSON.parse(localStorage.getItem('hackathons')) || [];
+            hackathons = allHacks.filter(h => h.user === currentUser.username);
+            if (hackathons.length === 0) {
+                listContainer.innerHTML = '<p style="color:#5C3317;text-align:center;font-size:1.5em;">No hackathons yet. Add one!</p>';
+                return;
+            }
+            // Remove hackathons with past deadlines
+            const today = new Date().toISOString().split('T')[0];
+            hackathons = hackathons.filter(h => h.deadline >= today);
+            let allHacksLocal = JSON.parse(localStorage.getItem('hackathons')) || [];
+            allHacksLocal = allHacksLocal.filter(h => h.user !== currentUser.username || h.deadline >= today);
+            localStorage.setItem('hackathons', JSON.stringify(allHacksLocal));
+
+            hackathons.forEach((hack, index) => {
+                const div = document.createElement('div');
+                div.classList.add('beige-block');
+                div.innerHTML = `
+                    <span class='hackathon-title' style='cursor:pointer;'><h3 style='margin:0;font-size:2em;display:inline;'>${hack.name}</h3></span>
+                    <p style='margin:0;font-size:1.2em;'><strong>Deadline:</strong> ${hack.deadline}</p>
+                    <button class='edit-hack-btn' data-index='${index}' style='margin-right:8px;background:#A0522D;color:#fff;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;'>Edit</button>
+                    <button class='delete-hack-btn' data-index='${index}' style='background:#fc8181;color:#fff;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;'>Delete</button>
+                `;
+                div.querySelector('.hackathon-title').addEventListener('click', () => showDetailsModal(hack));
+                div.querySelector('.edit-hack-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const hack = hackathons[index];
+                    div.innerHTML = `
+                        <input type='text' class='edit-name' value='${hack.name}' style='margin-bottom:8px;width:90%;'>
+                        <input type='date' class='edit-deadline' value='${hack.deadline}' style='margin-bottom:8px;width:90%;'>
+                        <textarea class='edit-description' style='margin-bottom:8px;width:90%;'>${hack.description}</textarea>
+                        <button class='save-hack-btn' data-index='${index}' style='background:#48bb78;color:#fff;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;margin-right:8px;'>Save</button>
+                        <button class='cancel-hack-btn' data-index='${index}' style='background:#fc8181;color:#fff;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;'>Cancel</button>
+                    `;
+                    div.querySelector('.save-hack-btn').addEventListener('click', () => {
+                        hack.name = div.querySelector('.edit-name').value;
+                        hack.deadline = div.querySelector('.edit-deadline').value;
+                        hack.description = div.querySelector('.edit-description').value;
+                        let allHacksLocalEdit = JSON.parse(localStorage.getItem('hackathons')) || [];
+                        allHacksLocalEdit = allHacksLocalEdit.map((h, i) => i == index && h.user === currentUser.username ? hack : h);
+                        localStorage.setItem('hackathons', JSON.stringify(allHacksLocalEdit));
+                        renderHackathons();
+                    });
+                    div.querySelector('.cancel-hack-btn').addEventListener('click', () => {
+                        renderHackathons();
+                    });
+                });
+                div.querySelector('.delete-hack-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let allHacksLocalDelete = JSON.parse(localStorage.getItem('hackathons')) || [];
+                    allHacksLocalDelete = allHacksLocalDelete.filter((h, i) => !(i == index && h.user === currentUser.username));
+                    localStorage.setItem('hackathons', JSON.stringify(allHacksLocalDelete));
+                    renderHackathons();
+                });
+                listContainer.appendChild(div);
+            });
+// ...existing code...
+            // Dashboard logic
+            const dashboard = document.getElementById('dashboard');
+            if (currentUser) {
+                dashboard.style.display = 'block';
+                document.getElementById('dashboard-username').innerHTML = `<strong>User:</strong> ${currentUser.username} <br><strong>Age:</strong> ${currentUser.age || ''}`;
+                if (hackathons.length > 0) {
+                    const upcoming = hackathons.map(h => `<li>${h.name}: <span style='color:#A0522D;'>${h.deadline}</span></li>`).join('');
+                    document.getElementById('dashboard-deadlines').innerHTML = `<strong>Upcoming Deadlines:</strong><ul>${upcoming}</ul>`;
+                } else {
+                    document.getElementById('dashboard-deadlines').innerHTML = `<strong>Upcoming Deadlines:</strong> None`;
+                }
+            } else {
+                dashboard.style.display = 'none';
+            }
+            // Hide auth bar if logged in
+            const authBar = document.getElementById('auth-bar');
+            if (currentUser) {
+                authBar.style.display = 'none';
+            } else {
+                authBar.style.display = 'flex';
+            }
+        }
+
+        function showDetailsModal(hack) {
+            detailsContent.innerHTML = `<button class="close-btn" id="close-details-modal-btn">X</button>
+                <h2 style='font-size:2em;'>${hack.name}</h2>
+                <p><strong>Deadline:</strong> ${hack.deadline}</p>
+                <p><strong>Description:</strong> ${hack.description}</p>
+                <div><strong>Teammates:</strong> <ul id='teammate-list'>${hack.teammates.map(t => `<li>${t}</li>`).join('')}</ul>
+                    <input type='text' id='add-teammate-input' placeholder='Add teammate' style='margin-top:8px;width:70%;'>
+                    <button id='add-teammate-btn' style='background:#A0522D;color:#fff;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;margin-left:8px;'>Add</button>
+                </div>
+                <div><strong>Tasks:</strong> <ul id='task-list'>${hack.tasks.map((task, tIndex) => `<li><input type='checkbox' ${task.done ? 'checked' : ''} data-tindex='${tIndex}' style='margin-right:8px;'>${task.task} (Assigned to: ${task.assignee}) <span style='color:#A0522D;'>Deadline: ${task.deadline || ''}</span></li>`).join('')}</ul>
+                    <input type='text' id='add-task-input' placeholder='Add task' style='margin-top:8px;width:30%;'>
+                    <input type='date' id='add-task-deadline' style='margin-left:8px;width:20%;'>
+                    <select id='assign-select' style='margin-left:8px;width:20%;'>${hack.teammates.map(t => `<option value='${t}'>${t}</option>`).join('')}</select>
+                    <button id='add-task-btn' style='background:#A0522D;color:#fff;border:none;border-radius:8px;padding:6px 16px;cursor:pointer;margin-left:8px;'>Add Task</button>
+                </div>
+            `;
+            detailsModal.classList.add('active');
+            document.getElementById('close-details-modal-btn').onclick = () => detailsModal.classList.remove('active');
+
+            // Add teammate event
+            document.getElementById('add-teammate-btn').onclick = function() {
+                const input = document.getElementById('add-teammate-input');
+                if (input.value.trim()) {
+                    hack.teammates.push(input.value.trim());
+                    let allHacks = JSON.parse(localStorage.getItem('hackathons')) || [];
+                    allHacks = allHacks.map(h => h.name === hack.name && h.user === hack.user ? hack : h);
+                    localStorage.setItem('hackathons', JSON.stringify(allHacks));
+                    showDetailsModal(hack);
+                }
+            };
+            // Add task event
+            document.getElementById('add-task-btn').onclick = function() {
+                const input = document.getElementById('add-task-input');
+                const select = document.getElementById('assign-select');
+                const deadlineInput = document.getElementById('add-task-deadline');
+                if (input.value.trim() && select.value && deadlineInput.value) {
+                    hack.tasks.push({ task: input.value.trim(), assignee: select.value, deadline: deadlineInput.value, done: false });
+                    let allHacks = JSON.parse(localStorage.getItem('hackathons')) || [];
+                    allHacks = allHacks.map(h => h.name === hack.name && h.user === hack.user ? hack : h);
+                    localStorage.setItem('hackathons', JSON.stringify(allHacks));
+                    showDetailsModal(hack);
+                }
+            };
+            // Checkbox events
+            document.querySelectorAll('#task-list input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const tIndex = e.target.dataset.tindex;
+                    hack.tasks[tIndex].done = e.target.checked;
+                    let allHacks = JSON.parse(localStorage.getItem('hackathons')) || [];
+                    allHacks = allHacks.map(h => h.name === hack.name && h.user === hack.user ? hack : h);
+                    localStorage.setItem('hackathons', JSON.stringify(allHacks));
+                });
+            });
+        }
+// ...existing code...
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const deadline = document.getElementById('deadline').value;
+            const description = document.getElementById('description').value;
+            let allHacks = JSON.parse(localStorage.getItem('hackathons')) || [];
+            allHacks.push({
+                name,
+                deadline,
+                description,
+                teammates: [],
+                tasks: [],
+                user: currentUser.username
+            });
+            localStorage.setItem('hackathons', JSON.stringify(allHacks));
+            form.reset();
+            modal.classList.remove('active');
+            renderHackathons();
+        });
+
+        renderHackathons();
+    </script>
+</body>
+</html>
